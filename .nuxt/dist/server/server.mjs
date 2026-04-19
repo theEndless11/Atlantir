@@ -1,0 +1,1 @@
+export { default } from "file:///C:/Users/Lenovo/Downloads/atlantir-bot-fixed/node_modules/@nuxt/vite-builder/dist/runtime/vite-node.mjs"
