@@ -228,7 +228,3 @@ export function useVoiceMode(workspaceId: string) {
   }
 }
 
-
-git add .
-git commit -m "some fixes"
-git push
