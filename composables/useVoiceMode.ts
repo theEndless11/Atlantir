@@ -1,6 +1,3 @@
-// Voice mode composable: Deepgram STT + ElevenLabs TTS
-// Single click to start listening; auto-submits on silence.
-
 export interface VoiceMessage {
   id: string
   role: 'user' | 'assistant'
