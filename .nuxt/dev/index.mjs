@@ -685,8 +685,8 @@ const _inlineRuntimeConfig = {
     }
   },
   "openrouterApiKey": "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",
-  "elevenLabsApiKey": "",
-  "elevenLabsVoiceId": "",
+  "elevenLabsApiKey": "sk_2c2cb645807605926b603534a816363a3fcb0b0c46b6814c",
+  "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
   "supabase": {
     "serviceKey": "sb_secret_XKNnF_37MmZBU_fWFZ9QxQ_Bxvnc26Q"
   }
@@ -5072,15 +5072,24 @@ const index_get$6 = defineEventHandler(async (event) => {
   if (!workspaceId) throw createError({ statusCode: 400, message: "workspace_id required" });
   const sb = useSupabaseAdmin();
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1e3).toISOString();
-  const [tasks, meetings, agentRuns, events] = await Promise.all([
-    sb.from("tasks").select("id,status,assigned_agent,priority,created_at,updated_at").eq("workspace_id", workspaceId).gte("created_at", since),
-    sb.from("meetings").select("id,title,status,transcript,created_at,ended_at,source,bot_platform").eq("workspace_id", workspaceId).gte("created_at", since).order("created_at", { ascending: false }),
-    sb.from("agent_runs").select("id,agent_type,status,started_at,ended_at").in("task_id", ((_a = (await sb.from("tasks").select("id").eq("workspace_id", workspaceId)).data) == null ? void 0 : _a.map((t) => t.id)) || []).gte("started_at", since),
-    sb.from("analytics_events").select("*").eq("workspace_id", workspaceId).gte("created_at", since)
+  const taskIds = ((_a = (await sb.from("tasks").select("id").eq("workspace_id", workspaceId)).data) == null ? void 0 : _a.map((t) => t.id)) || [];
+  const [tasks, meetings, agentRuns, integrations, databases, fileChunks] = await Promise.all([
+    sb.from("tasks").select("id,status,assigned_agent,created_at,updated_at").eq("workspace_id", workspaceId).gte("created_at", since),
+    sb.from("meetings").select("id,source,bot_platform,transcript,created_at").eq("workspace_id", workspaceId).gte("created_at", since),
+    taskIds.length ? sb.from("agent_runs").select("id,agent_type,status,started_at,ended_at").in("task_id", taskIds).gte("started_at", since) : { data: [] },
+    // CORRECT columns: type, status — no name/enabled column
+    sb.from("integrations").select("type,status").eq("workspace_id", workspaceId),
+    sb.from("db_connections").select("name,db_type,status").eq("workspace_id", workspaceId),
+    sb.from("file_chunks").select("id,embedding").eq("workspace_id", workspaceId)
   ]);
   const allTasks = tasks.data || [];
   const allMeetings = meetings.data || [];
   const allRuns = agentRuns.data || [];
+  const allChunks = fileChunks.data || [];
+  const allIntegrations = (integrations.data || []).map((i) => ({
+    type: i.type,
+    status: i.status || "connected"
+  }));
   const tasksByStatus = allTasks.reduce((acc, t) => {
     acc[t.status] = (acc[t.status] || 0) + 1;
     return acc;
@@ -5093,9 +5102,7 @@ const index_get$6 = defineEventHandler(async (event) => {
   const total = allTasks.length;
   const completionRate = total > 0 ? Math.round(completed / total * 100) : 0;
   const completedRuns = allRuns.filter((r) => r.status === "completed" && r.ended_at);
-  const avgRunMs = completedRuns.length > 0 ? completedRuns.reduce((sum, r) => {
-    return sum + (new Date(r.ended_at).getTime() - new Date(r.started_at).getTime());
-  }, 0) / completedRuns.length : 0;
+  const avgRunMs = completedRuns.length > 0 ? completedRuns.reduce((sum, r) => sum + (new Date(r.ended_at).getTime() - new Date(r.started_at).getTime()), 0) / completedRuns.length : 0;
   const tasksByDay = {};
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10);
@@ -5111,14 +5118,15 @@ const index_get$6 = defineEventHandler(async (event) => {
     agentPerf[r.agent_type].runs++;
     if (r.status === "completed") {
       agentPerf[r.agent_type].completed++;
-      if (r.ended_at) {
+      if (r.ended_at)
         agentPerf[r.agent_type].avgMs += new Date(r.ended_at).getTime() - new Date(r.started_at).getTime();
-      }
     }
   });
   Object.values(agentPerf).forEach((p) => {
     if (p.completed > 0) p.avgMs = Math.round(p.avgMs / p.completed);
   });
+  const embeddedChunks = allChunks.filter((c) => c.embedding !== null).length;
+  const totalFiles = Math.ceil(allChunks.length / 10) || 0;
   return {
     summary: {
       totalTasks: total,
@@ -5126,13 +5134,22 @@ const index_get$6 = defineEventHandler(async (event) => {
       completionRate,
       totalMeetings: allMeetings.length,
       totalAgentRuns: allRuns.length,
-      avgRunMs: Math.round(avgRunMs)
+      avgRunMs: Math.round(avgRunMs),
+      totalVoiceSessions: allMeetings.filter((m) => m.source === "voice" || m.bot_platform).length,
+      totalEmbeddings: embeddedChunks,
+      connectedIntegrations: allIntegrations.filter((i) => i.status === "connected").length
     },
     tasksByStatus,
     tasksByAgent,
     tasksByDay,
     agentPerf,
-    recentMeetings: allMeetings.slice(0, 10)
+    integrations: allIntegrations,
+    databases: databases.data || [],
+    rag: {
+      totalFiles,
+      totalChunks: allChunks.length,
+      embeddedChunks
+    }
   };
 });
 

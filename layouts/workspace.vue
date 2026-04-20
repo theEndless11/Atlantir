@@ -32,6 +32,11 @@
         <NuxtLink :to="`/workspace/${workspaceId}/integrations`" class="nav-btn" :class="{ active: isIntegrations }" title="Integrations">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         </NuxtLink>
+
+        <NuxtLink :to="`/workspace/${workspaceId}/analytics`"        class="nav-btn" :class="{ active: isFiles }"        title="Knowledge base">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </NuxtLink>
+
         <NuxtLink :to="`/workspace/${workspaceId}/settings`"     class="nav-btn" :class="{ active: isSettings }"     title="Settings & members">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </NuxtLink>
@@ -81,25 +86,26 @@
 const supabase = useSupabaseClient()
 const user     = useSupabaseUser()
 const route    = useRoute()
-
+ 
 const isDark       = ref(false)
 const showUserMenu = ref(false)
 const userMenuRef  = ref<HTMLElement>()
-
+ 
 const workspaceId = computed(() => {
   if (route.params.id) return Array.isArray(route.params.id) ? route.params.id[0] : route.params.id as string
   const match = route.path.match(/\/workspace\/([^/]+)/)
   return match ? match[1] : ''
 })
-
+ 
 const isHome         = computed(() => route.path === `/workspace/${workspaceId.value}`)
 const isMeeting      = computed(() => route.path.includes('/meeting'))
 const isWorkflows    = computed(() => route.path.endsWith('/workflows'))
 const isAnalyst      = computed(() => route.path.endsWith('/analyst'))
 const isFiles        = computed(() => route.path.endsWith('/files'))
 const isIntegrations = computed(() => route.path.endsWith('/integrations'))
+const isAnalytics    = computed(() => route.path.endsWith('/analytics'))
 const isSettings     = computed(() => route.path.endsWith('/settings'))
-
+ 
 const workspaceName    = ref('Workspace')
 const workspaceInitial = computed(() => workspaceName.value.slice(0, 2).toUpperCase())
 const userEmail = computed(() => user.value?.email || '')
@@ -107,49 +113,49 @@ const userName  = computed(() => user.value?.user_metadata?.full_name || userEma
 const userInitial = computed(() =>
   (user.value?.user_metadata?.full_name || user.value?.email || '?')[0].toUpperCase()
 )
-
+ 
 // Close menu on outside click — NOT on nav itself
 function handleOutsideClick(e: MouseEvent) {
   if (userMenuRef.value && !userMenuRef.value.contains(e.target as Node)) {
     showUserMenu.value = false
   }
 }
-
+ 
 onMounted(async () => {
   if (!workspaceId.value || !user.value?.id) return
-
+ 
   const { data: member } = await supabase
     .from('workspace_members')
     .select('id')
     .eq('workspace_id', workspaceId.value)
     .eq('user_id', user.value.id)
     .single()
-
+ 
   if (!member) { navigateTo('/no-workspace'); return }
-
+ 
   const { data: ws } = await supabase
     .from('workspaces').select('name')
     .eq('id', workspaceId.value).single()
   if (ws) workspaceName.value = ws.name
-
+ 
   try { isDark.value = localStorage.getItem('agentspace-dark') === '1' } catch {}
-
+ 
   document.addEventListener('click', handleOutsideClick)
-
+ 
   supabase.channel(`membership:${workspaceId.value}:${user.value.id}`)
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'workspace_members', filter: `workspace_id=eq.${workspaceId.value}` },
       (payload) => { if ((payload.old as any)?.user_id === user.value?.id) navigateTo('/no-workspace') })
     .subscribe()
 })
-
+ 
 onUnmounted(() => {
   document.removeEventListener('click', handleOutsideClick)
 })
-
+ 
 watch(isDark, (v) => {
   try { localStorage.setItem('agentspace-dark', v ? '1' : '0') } catch {}
 })
-
+ 
 async function signOut() {
   showUserMenu.value = false
   await supabase.auth.signOut()
@@ -158,6 +164,7 @@ async function signOut() {
 </script>
 
 <style scoped>
+
 .app-shell { display: flex; height: 100vh; overflow: hidden; background: var(--bg); }
 .sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 2px; }
 .sidebar-brand { padding: 6px; margin-bottom: 4px; color: var(--accent); }

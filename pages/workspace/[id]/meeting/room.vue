@@ -8,7 +8,6 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
           Back
         </NuxtLink>
-        <!-- Editable meeting title -->
         <div class="title-wrap">
           <input
             v-if="editingTitle"
@@ -64,11 +63,9 @@
     <!-- Main body -->
     <div class="meeting-body">
 
-      <!-- ── TAB: Live transcript ── -->
+      <!-- TAB: Live transcript -->
       <template v-if="activeTab === 'live'">
         <div class="live-grid">
-
-          <!-- Transcript panel -->
           <div class="panel transcript-panel">
             <div class="panel-label">
               Transcript
@@ -92,7 +89,6 @@
             <p v-if="deepgramError" class="error-banner">{{ deepgramError }}</p>
           </div>
 
-          <!-- Agent responses + tasks -->
           <div class="panel response-panel">
             <div class="panel-label">Agent responses</div>
             <div ref="chatEl" class="panel-scroll chat-scroll">
@@ -111,8 +107,6 @@
                 <div class="msg-meta"><span class="msg-sender">{{ thinkingAgent }} is thinking…</span></div>
               </div>
             </div>
-
-            <!-- Tasks created -->
             <div v-if="meetingTasks.length" class="tasks-section">
               <div class="tasks-label">{{ meetingTasks.length }} task{{ meetingTasks.length !== 1 ? 's' : '' }} created</div>
               <div class="tasks-grid">
@@ -121,33 +115,25 @@
                   <span class="task-chip-status" :class="task.status">{{ statusLabel(task.status) }}</span>
                 </div>
               </div>
-              <NuxtLink :to="`/workspace/${workspaceId}`" class="go-to-workspace-link">
-                View in workspace →
-              </NuxtLink>
+              <NuxtLink :to="`/workspace/${workspaceId}`" class="go-to-workspace-link">View in workspace →</NuxtLink>
             </div>
           </div>
-
         </div>
 
-        <!-- Ended state -->
         <div v-if="ended" class="ended-overlay">
           <div class="ended-card">
             <div class="ended-icon">✓</div>
             <h3>Meeting ended</h3>
             <p>{{ meetingTasks.length }} task{{ meetingTasks.length !== 1 ? 's' : '' }} created from this meeting</p>
-            <NuxtLink :to="`/workspace/${workspaceId}`" class="btn btn-primary">
-              Go to workspace →
-            </NuxtLink>
+            <NuxtLink :to="`/workspace/${workspaceId}`" class="btn btn-primary">Go to workspace →</NuxtLink>
             <button class="btn btn-ghost" @click="deleteMeeting">Delete meeting</button>
           </div>
         </div>
       </template>
 
-      <!-- ── TAB: Bot join ── -->
+      <!-- TAB: Bot join -->
       <template v-if="activeTab === 'bot'">
         <div class="bot-tab">
-
-          <!-- Join Now / Schedule tabs -->
           <div class="bot-mode-tabs">
             <button class="bot-mode-tab" :class="{ active: botTab === 'now' }" @click="botTab = 'now'">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.82v6.36a1 1 0 0 1-1.447.894L15 14"/><rect x="3" y="8" width="12" height="8" rx="2"/></svg>
@@ -159,10 +145,7 @@
             </button>
           </div>
 
-          <!-- ── JOIN NOW ── -->
           <template v-if="botTab === 'now'">
-
-            <!-- Platform picker -->
             <div class="platform-grid">
               <button v-for="p in platforms" :key="p.id" class="platform-btn" :class="{ selected: selectedPlatform === p.id }" @click="selectedPlatform = p.id">
                 <div class="plat-logo" :style="{ background: p.bg }">
@@ -174,7 +157,6 @@
                 </div>
               </button>
             </div>
-
             <div class="bot-form">
               <div v-if="selectedPlatform === 'zoom'" class="join-method-toggle">
                 <button :class="{ active: botJoinMethod === 'url' }" @click="botJoinMethod = 'url'">Paste URL</button>
@@ -218,7 +200,6 @@
               </button>
             </div>
 
-            <!-- Active bot session -->
             <div v-if="botSession" class="bot-session">
               <div class="bot-session-bar">
                 <div class="bot-live-dot" :class="botSession.status" />
@@ -240,13 +221,10 @@
                 <span>Bot is in the meeting. Conversation will appear here as people speak.</span>
               </div>
             </div>
-
           </template>
 
-          <!-- ── SCHEDULE ── -->
           <template v-if="botTab === 'schedule'">
             <div class="bot-form">
-              <!-- Platform picker (reused) -->
               <div class="platform-grid">
                 <button v-for="p in platforms" :key="p.id" class="platform-btn" :class="{ selected: schedPlatform === p.id }" @click="schedPlatform = p.id">
                   <div class="plat-logo" :style="{ background: p.bg }">
@@ -258,8 +236,6 @@
                   </div>
                 </button>
               </div>
-
-              <!-- URL or ID toggle (Zoom) -->
               <div v-if="schedPlatform === 'zoom'" class="join-method-toggle">
                 <button :class="{ active: schedJoinMethod === 'url' }" @click="schedJoinMethod = 'url'">Paste URL</button>
                 <button :class="{ active: schedJoinMethod === 'id' }"  @click="schedJoinMethod = 'id'">Meeting ID</button>
@@ -278,8 +254,6 @@
                   <input v-model="sched.zoom_pwd" class="input" placeholder="abc123" type="password" />
                 </div>
               </template>
-
-              <!-- Date / time / tz row -->
               <div class="sched-time-row">
                 <div class="bot-form-field">
                   <label>Date</label>
@@ -296,7 +270,6 @@
                   </select>
                 </div>
               </div>
-
               <div class="bot-form-field">
                 <label>Bot name <span class="field-required">*</span></label>
                 <input v-model="sched.bot_name" class="input" placeholder="e.g. Atlantir" />
@@ -313,12 +286,10 @@
                 <label>Instructions / notes</label>
                 <textarea v-model="sched.instructions" class="input instructions-textarea" placeholder="Tell the bot its purpose for this scheduled call…" rows="3" />
               </div>
-
               <div class="join-notice">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 Bot joins automatically at the scheduled time. Your browser doesn't need to be open.
               </div>
-
               <button class="btn btn-primary bot-join-btn" :disabled="!canSchedule || scheduling" @click="scheduleBot">
                 <span v-if="scheduling" class="spinner" />
                 <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -326,7 +297,6 @@
               </button>
             </div>
 
-            <!-- Scheduled list -->
             <div v-if="scheduledBots.length" class="sched-list">
               <div class="sched-list-label">Upcoming scheduled bots</div>
               <div v-for="s in scheduledBots" :key="s.id" class="sched-row">
@@ -339,35 +309,25 @@
               </div>
             </div>
           </template>
-
         </div>
       </template>
 
-      <!-- ── TAB: Past meetings ── -->
+      <!-- TAB: Past meetings -->
       <template v-if="activeTab === 'history'">
         <div class="history-tab">
-
-          <!-- Empty state -->
           <div v-if="!pastMeetings.length" class="history-empty">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5-4v-4h4"/></svg>
             <span>No past meetings yet.</span>
           </div>
-
-          <!-- Single unified list surface -->
           <div v-else class="history-list">
-            <!-- Column header -->
             <div class="history-list-header">
               <span class="hcol-title">Title</span>
               <span class="hcol-date">Date</span>
               <span class="hcol-tasks">Tasks</span>
               <span class="hcol-actions" />
             </div>
-
             <template v-for="(m, idx) in pastMeetings" :key="m.id">
-              <!-- Main row -->
               <div class="history-row-main" @click="openMeeting(m)">
-
-                <!-- Title + always-visible Edit btn -->
                 <div class="hcol-title" @click.stop>
                   <template v-if="historyEditingId === m.id">
                     <input
@@ -390,15 +350,11 @@
                     </button>
                   </template>
                 </div>
-
                 <span class="hcol-date">{{ formatDate(m.created_at) }}</span>
-
                 <span class="hcol-tasks">
                   <span v-if="m.task_count > 0" class="task-pill">{{ m.task_count }} task{{ m.task_count !== 1 ? 's' : '' }}</span>
                   <span v-else class="task-pill-empty">—</span>
                 </span>
-
-                <!-- Always-visible actions -->
                 <div class="hcol-actions" @click.stop>
                   <button
                     v-if="m.transcript"
@@ -418,13 +374,9 @@
                   </button>
                 </div>
               </div>
-
-              <!-- Expandable transcript — full width, no indent -->
               <div v-if="expandedMeeting === m.id && m.transcript" class="history-transcript">
                 {{ m.transcript }}
               </div>
-
-              <!-- Divider -->
               <div v-if="idx < pastMeetings.length - 1" class="history-divider" />
             </template>
           </div>
@@ -433,124 +385,221 @@
 
     </div>
 
-    <!-- ── Custom Share / Record Modal ── -->
+    <!-- Share / Record Modal -->
     <Teleport to="body">
-      <div v-if="showShareModal" class="modal-backdrop" @click.self="showShareModal = false">
+      <div v-if="showShareModal" class="modal-backdrop" @click.self="cancelShareModal">
         <div class="share-modal">
 
+          <!-- Header -->
           <div class="share-modal-header">
             <div class="share-modal-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             </div>
-            <div>
+            <div class="share-modal-titles">
               <h3 class="share-modal-title">Start recording</h3>
-              <p class="share-modal-sub">Choose what to capture for this session</p>
+              <p class="share-modal-sub">{{ shareModalSubtitle }}</p>
             </div>
-            <button class="share-modal-close" @click="showShareModal = false">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <button class="share-modal-close" @click="cancelShareModal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <!-- Tab strip -->
+          <div class="share-tabs">
+            <button
+              v-for="tab in shareTabs"
+              :key="tab.id"
+              class="share-tab"
+              :class="{ active: shareTab === tab.id }"
+              @click="handleShareTabChange(tab.id)"
+            >
+              <svg v-if="tab.id === 'screen'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+              {{ tab.label }}
             </button>
           </div>
 
           <div class="share-modal-body">
 
-            <!-- Source tabs -->
-            <div class="share-tabs">
-              <button v-for="tab in shareTabs" :key="tab.id" class="share-tab" :class="{ active: shareTab === tab.id }" @click="shareTab = tab.id">
-                {{ tab.label }}
-              </button>
-            </div>
+            <!-- ── SCREEN SHARE TAB ── -->
+            <template v-if="shareTab === 'screen'">
 
-            <!-- Source list -->
-            <div class="share-tab-content">
-              <!-- Browser Tab -->
-              <div v-if="shareTab === 'tab'" class="share-items">
-                <div
-                  v-for="t in mockBrowserTabs"
-                  :key="t.id"
-                  class="share-item"
-                  :class="{ selected: selectedSource?.id === t.id }"
-                  @click="selectedSource = t"
-                >
-                  <div class="share-item-icon">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              <!-- State: idle — waiting for user to click select -->
+              <div v-if="screenState === 'idle'" class="screen-state-center">
+                <div class="screen-select-card" @click="requestScreenShare">
+                  <div class="screen-select-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                   </div>
-                  <span class="share-item-name">{{ t.name }}</span>
-                  <div v-if="selectedSource?.id === t.id" class="share-item-check">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Window -->
-              <div v-else-if="shareTab === 'window'" class="share-items">
-                <div
-                  v-for="w in mockWindows"
-                  :key="w.id"
-                  class="share-item"
-                  :class="{ selected: selectedSource?.id === w.id }"
-                  @click="selectedSource = w"
-                >
-                  <div class="share-item-icon">
+                  <p class="screen-select-label">Select a screen, window, or tab</p>
+                  <p class="screen-select-sub">Click to open the browser source picker</p>
+                  <div class="screen-select-btn">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    Choose source
                   </div>
-                  <span class="share-item-name">{{ w.name }}</span>
-                  <div v-if="selectedSource?.id === w.id" class="share-item-check">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  </div>
+                </div>
+                <div class="screen-audio-notice">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                  <span>In the browser picker, check <strong>Also share tab audio</strong> or <strong>Share system audio</strong> to capture sound from the source</span>
                 </div>
               </div>
 
-              <!-- Entire Screen -->
-              <div v-else-if="shareTab === 'screen'" class="share-items">
-                <div
-                  class="share-item"
-                  :class="{ selected: selectedSource?.id === 'screen-main' }"
-                  @click="selectedSource = { id: 'screen-main', name: 'Entire Screen' }"
-                >
-                  <div class="share-item-icon">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                  </div>
-                  <span class="share-item-name">Entire Screen</span>
-                  <div v-if="selectedSource?.id === 'screen-main'" class="share-item-check">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  </div>
+              <!-- State: requesting permission -->
+              <div v-if="screenState === 'requesting'" class="screen-state-center">
+                <div class="screen-state-spinner">
+                  <span class="spinner-lg" />
                 </div>
+                <p class="screen-state-title">Waiting for screen selection…</p>
+                <p class="screen-state-sub">Choose a screen, window, or tab in the browser dialog</p>
               </div>
-            </div>
 
-            <!-- Options: audio + record -->
-            <div class="share-options">
-              <div class="share-option-row">
-                <div class="share-option-info">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-                  <div>
-                    <span class="share-option-label">Capture audio</span>
-                    <span class="share-option-desc">Include system audio from the selected source</span>
-                  </div>
+              <!-- State: denied -->
+              <div v-else-if="screenState === 'denied'" class="screen-state-center">
+                <div class="screen-state-icon screen-state-icon--warn">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
-                <button class="toggle" :class="{ on: shareAudio }" @click="shareAudio = !shareAudio">
-                  <span class="toggle-knob" />
+                <p class="screen-state-title">Screen access was denied</p>
+                <p class="screen-state-sub">Click below to try again, or switch to Microphone to record audio only</p>
+                <button class="btn-retry" @click="requestScreenShare">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5.1"/></svg>
+                  Try again
                 </button>
               </div>
-              <div class="share-option-row">
-                <div class="share-option-info">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                  <div>
-                    <span class="share-option-label">Save recording</span>
-                    <span class="share-option-desc">Automatically save when the meeting ends</span>
+
+              <!-- State: live preview -->
+              <div v-else-if="screenState === 'preview'" class="screen-preview-wrap">
+                <!-- Video preview -->
+                <div class="screen-preview-frame">
+                  <video ref="previewVideo" class="screen-preview-video" autoplay muted playsinline />
+                  <div class="screen-preview-badge">
+                    <span class="preview-dot" />
+                    Live preview
+                  </div>
+                  <!-- Source label pill -->
+                  <div class="screen-source-label">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    {{ screenSourceLabel }}
                   </div>
                 </div>
-                <button class="toggle" :class="{ on: autoSave }" @click="autoSave = !autoSave">
-                  <span class="toggle-knob" />
-                </button>
+
+                <!-- Options row -->
+                <div class="screen-options">
+                  <div class="screen-option">
+                    <div class="screen-option-info">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                      <div>
+                        <span class="screen-option-label">Capture audio</span>
+                        <span class="screen-option-desc">Include system audio</span>
+                      </div>
+                    </div>
+                    <button class="toggle" :class="{ on: shareAudio }" @click="shareAudio = !shareAudio">
+                      <span class="toggle-knob" />
+                    </button>
+                  </div>
+                  <div class="screen-option">
+                    <div class="screen-option-info">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                      <div>
+                        <span class="screen-option-label">Save recording</span>
+                        <span class="screen-option-desc">Auto-save when meeting ends</span>
+                      </div>
+                    </div>
+                    <button class="toggle" :class="{ on: autoSave }" @click="autoSave = !autoSave">
+                      <span class="toggle-knob" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Change source link -->
+                <div class="screen-change-row">
+                  <button class="screen-change-btn" @click="requestScreenShare">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5.1"/></svg>
+                    Change source
+                  </button>
+                </div>
               </div>
-            </div>
+
+            </template>
+
+            <!-- ── AUDIO TAB ── -->
+            <template v-else-if="shareTab === 'audio'">
+              <div class="audio-tab-body">
+
+                <div v-if="audioSourcesLoading" class="screen-state-center">
+                  <span class="spinner-lg" />
+                  <p class="screen-state-sub">Detecting audio devices…</p>
+                </div>
+
+                <div v-else-if="audioPermissionDenied" class="screen-state-center">
+                  <div class="screen-state-icon screen-state-icon--warn">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                  </div>
+                  <p class="screen-state-title">Microphone access denied</p>
+                  <p class="screen-state-sub">Allow microphone access in your browser settings</p>
+                  <button class="btn-retry" @click="enumerateAudioDevices">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5.1"/></svg>
+                    Retry
+                  </button>
+                </div>
+
+                <template v-else>
+                  <p class="audio-section-label">Microphones &amp; inputs</p>
+                  <div class="audio-device-list">
+                    <div
+                      v-for="device in audioInputDevices"
+                      :key="device.deviceId"
+                      class="audio-device-row"
+                      :class="{ selected: selectedAudioDeviceId === device.deviceId }"
+                      @click="selectAudioDevice(device)"
+                    >
+                      <div class="audio-device-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                      </div>
+                      <div class="audio-device-info">
+                        <span class="audio-device-name">{{ device.label || `Microphone ${audioInputDevices.indexOf(device) + 1}` }}</span>
+                        <span v-if="device.deviceId === 'default'" class="audio-device-badge">Default</span>
+                      </div>
+                      <!-- Live level meter when selected -->
+                      <div v-if="selectedAudioDeviceId === device.deviceId" class="audio-level-meter">
+                        <span v-for="i in 8" :key="i" class="audio-level-bar" :class="{ active: audioLevel >= i }" />
+                      </div>
+                      <div v-if="selectedAudioDeviceId === device.deviceId" class="audio-device-check">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                    </div>
+
+                    <div v-if="!audioInputDevices.length" class="screen-state-center" style="padding: 32px 0">
+                      <p class="screen-state-sub">No audio devices found</p>
+                    </div>
+
+                    <!-- Loopback option -->
+                    <div
+                      class="audio-device-row audio-device-row--loopback"
+                      :class="{ selected: selectedAudioDeviceId === 'loopback' }"
+                      @click="selectLoopback"
+                    >
+                      <div class="audio-device-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                      </div>
+                      <div class="audio-device-info">
+                        <span class="audio-device-name">Tab / system audio</span>
+                        <span class="audio-device-sub">Capture audio playing in a browser tab or window</span>
+                      </div>
+                      <div v-if="selectedAudioDeviceId === 'loopback'" class="audio-device-check">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+
+              </div>
+            </template>
 
           </div>
 
+          <!-- Footer -->
           <div class="share-modal-footer">
-            <button class="btn-cancel-modal" @click="showShareModal = false">Cancel</button>
-            <button class="btn-start-rec" :disabled="!selectedSource" @click="confirmStartRecording">
+            <button class="btn-cancel-modal" @click="cancelShareModal">Cancel</button>
+            <button class="btn-start-rec" :disabled="!canStartRecording" @click="confirmStartRecording">
               <span class="rec-dot-sm" />
               Start recording
             </button>
@@ -576,7 +625,7 @@ const {
   loadDevices, start, pause, resume, stop
 } = useDeepgram()
 
-// ── State ────────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
 const meetingId       = ref<string | null>(null)
 const meetingTitle    = ref('New meeting')
 const editingTitle    = ref(false)
@@ -597,48 +646,219 @@ const startTime       = ref<Date | null>(null)
 const duration        = ref('0:00')
 const activeTab       = ref<'live' | 'bot' | 'history'>('live')
 
-// History inline editing
-const historyEditingId    = ref<string | null>(null)
-const historyEditingTitle = ref('')
+const historyEditingId     = ref<string | null>(null)
+const historyEditingTitle  = ref('')
 const historyTitleInputRef = ref<HTMLInputElement | null>(null)
 
-// Share modal
+// ── Share modal state ──────────────────────────────────────────────────────────
 const showShareModal = ref(false)
-const shareTab       = ref<'tab' | 'window' | 'screen'>('tab')
+const shareTab       = ref<'screen' | 'audio'>('screen')
 const shareAudio     = ref(true)
 const autoSave       = ref(false)
 const selectedSource = ref<{ id: string; name: string } | null>(null)
 
+// Screen share preview
+const screenState       = ref<'idle' | 'requesting' | 'denied' | 'preview'>('idle')
+const screenStream      = ref<MediaStream | null>(null)
+const screenSourceLabel = ref('Screen')
+const previewVideo      = ref<HTMLVideoElement | null>(null)
+
+// Audio device state
+const audioInputDevices      = ref<MediaDeviceInfo[]>([])
+const audioSourcesLoading    = ref(false)
+const audioPermissionDenied  = ref(false)
+const selectedAudioDeviceId  = ref<string | null>(null)
+const audioLevel             = ref(0)
+let   audioLevelTimer: any   = null
+let   audioAnalyser: AnalyserNode | null = null
+
 const shareTabs = [
-  { id: 'tab',    label: 'Browser Tab' },
-  { id: 'window', label: 'Window' },
-  { id: 'screen', label: 'Entire Screen' },
+  { id: 'screen', label: 'Screen share' },
+  { id: 'audio',  label: 'Microphone / Audio' },
 ] as const
 
-// Replace with real getDisplayMedia enumeration when wired up
-const mockBrowserTabs = [
-  { id: 'bt-1', name: 'Meeting Room — Atlantir' },
-  { id: 'bt-2', name: 'Google Meet' },
-  { id: 'bt-3', name: 'Zoom' },
-]
-const mockWindows = [
-  { id: 'win-1', name: 'Microsoft Edge' },
-  { id: 'win-2', name: 'Slack' },
-  { id: 'win-3', name: 'Finder' },
-]
+const shareModalSubtitle = computed(() => {
+  if (shareTab.value === 'screen') {
+    if (screenState.value === 'idle')       return 'Choose a source to capture'
+    if (screenState.value === 'requesting') return 'Select a source in the browser dialog'
+    if (screenState.value === 'denied')     return 'Permission was denied'
+    return `Sharing: ${screenSourceLabel.value}`
+  }
+  return 'Choose an audio input device'
+})
 
-function openShareModal() {
-  selectedSource.value = null
-  shareTab.value = 'tab'
-  showShareModal.value = true
+const canStartRecording = computed(() => {
+  if (shareTab.value === 'audio')  return !!selectedAudioDeviceId.value
+  return screenState.value === 'preview'
+})
+
+// ── Screen share preview ───────────────────────────────────────────────────────
+async function requestScreenShare() {
+  screenState.value = 'requesting'
+  stopScreenPreview()
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: true,   // user can toggle sharing audio in the browser picker
+    })
+    screenStream.value = stream
+    screenState.value  = 'preview'
+
+    // Derive a friendly label from the stream track
+    const track = stream.getVideoTracks()[0]
+    const settings = track.getSettings() as any
+    screenSourceLabel.value = track.label
+      || (settings.displaySurface === 'monitor' ? 'Entire screen'
+        : settings.displaySurface === 'window'  ? 'Application window'
+        : settings.displaySurface === 'browser' ? 'Browser tab'
+        : 'Screen')
+
+    selectedSource.value = { id: 'display-screen', name: screenSourceLabel.value }
+
+    // Attach to preview video element after DOM update
+    await nextTick()
+    if (previewVideo.value) {
+      previewVideo.value.srcObject = stream
+    }
+
+    // If user closes the picker from the browser chrome, treat as denied
+    track.addEventListener('ended', () => {
+      if (screenState.value === 'preview') {
+        stopScreenPreview()
+        screenState.value = 'denied'
+      }
+    })
+  } catch (err: any) {
+    screenState.value = 'denied'
+  }
+}
+
+function stopScreenPreview() {
+  if (screenStream.value) {
+    screenStream.value.getTracks().forEach(t => t.stop())
+    screenStream.value = null
+  }
+  if (previewVideo.value) previewVideo.value.srcObject = null
+}
+
+// ── Audio device enumeration ───────────────────────────────────────────────────
+async function enumerateAudioDevices() {
+  audioSourcesLoading.value   = true
+  audioPermissionDenied.value = false
+  audioInputDevices.value     = []
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+    stream.getTracks().forEach(t => t.stop())
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    audioInputDevices.value = devices.filter(d => d.kind === 'audioinput')
+  } catch (err: any) {
+    if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+      audioPermissionDenied.value = true
+    } else {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        audioInputDevices.value = devices.filter(d => d.kind === 'audioinput')
+      } catch { audioInputDevices.value = [] }
+    }
+  } finally {
+    audioSourcesLoading.value = false
+  }
+}
+
+function selectAudioDevice(device: MediaDeviceInfo) {
+  selectedAudioDeviceId.value = device.deviceId
+  selectedSource.value = { id: device.deviceId, name: device.label || 'Microphone' }
+  startAudioLevelMeter(device.deviceId)
+}
+
+function selectLoopback() {
+  selectedAudioDeviceId.value = 'loopback'
+  selectedSource.value = { id: 'loopback', name: 'Tab / system audio' }
+  stopAudioLevelMeter()
+}
+
+// Live audio level meter using Web Audio API
+async function startAudioLevelMeter(deviceId: string) {
+  stopAudioLevelMeter()
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { deviceId: deviceId === 'default' ? undefined : { exact: deviceId } },
+      video: false,
+    })
+    const ctx      = new AudioContext()
+    const source   = ctx.createMediaStreamSource(stream)
+    audioAnalyser  = ctx.createAnalyser()
+    audioAnalyser.fftSize = 256
+    source.connect(audioAnalyser)
+    const data = new Uint8Array(audioAnalyser.frequencyBinCount)
+    audioLevelTimer = setInterval(() => {
+      audioAnalyser!.getByteFrequencyData(data)
+      const avg = data.reduce((a, b) => a + b, 0) / data.length
+      audioLevel.value = Math.round((avg / 255) * 8)
+    }, 80)
+    // Stop stream when modal closes
+    ;(stream as any).__levelStream = stream
+  } catch { /* mic unavailable, meter just stays at 0 */ }
+}
+
+function stopAudioLevelMeter() {
+  clearInterval(audioLevelTimer)
+  audioLevel.value = 0
+  audioAnalyser = null
+}
+
+// ── Tab switch ─────────────────────────────────────────────────────────────────
+function handleShareTabChange(id: typeof shareTab.value) {
+  shareTab.value              = id
+  selectedSource.value        = null
+  selectedAudioDeviceId.value = null
+  stopAudioLevelMeter()
+  if (id === 'audio') {
+    stopScreenPreview()
+    enumerateAudioDevices()
+  } else {
+    stopScreenPreview()
+    screenState.value = 'idle'
+  }
+}
+
+// ── Modal open / cancel / confirm ─────────────────────────────────────────────
+async function openShareModal() {
+  selectedSource.value        = null
+  selectedAudioDeviceId.value = null
+  shareTab.value              = 'screen'
+  screenState.value           = 'idle'
+  audioInputDevices.value     = []
+  audioPermissionDenied.value = false
+  showShareModal.value        = true
+}
+
+function cancelShareModal() {
+  stopScreenPreview()
+  stopAudioLevelMeter()
+  showShareModal.value = false
 }
 
 async function confirmStartRecording() {
-  showShareModal.value = false
-  await startRecording()
+  if (shareTab.value === 'audio') {
+    showShareModal.value = false
+    stopAudioLevelMeter()
+    if (selectedAudioDeviceId.value === 'loopback') {
+      await startRecording({ mode: 'loopback' })
+    } else if (selectedAudioDeviceId.value) {
+      await startRecording({ mode: 'device', deviceId: selectedAudioDeviceId.value })
+    }
+  } else {
+    // Hand the already-acquired stream to Deepgram instead of calling getDisplayMedia again
+    const stream = screenStream.value
+    screenStream.value   = null   // transfer ownership — don't stop it
+    showShareModal.value = false
+    await startRecording({ mode: 'display', captureAudio: shareAudio.value, stream })
+  }
 }
 
-// Bot join state
+// ── Bot state ──────────────────────────────────────────────────────────────────
 const selectedPlatform   = ref('googlemeet')
 const botMeetingUrl      = ref('')
 const botName            = ref('')
@@ -652,12 +872,12 @@ const botJoining         = ref(false)
 const botSession         = ref<any>(null)
 const botTab             = ref<'now' | 'schedule'>('now')
 
-// Schedule state
-const todayStr       = new Date().toISOString().slice(0, 10)
-const schedPlatform  = ref('googlemeet')
+// ── Schedule state ─────────────────────────────────────────────────────────────
+const todayStr        = new Date().toISOString().slice(0, 10)
+const schedPlatform   = ref('googlemeet')
 const schedJoinMethod = ref<'url' | 'id'>('url')
-const scheduling     = ref(false)
-const scheduledBots  = ref<any[]>([])
+const scheduling      = ref(false)
+const scheduledBots   = ref<any[]>([])
 const sched = ref({
   room_url: '', zoom_id: '', zoom_pwd: '',
   date: todayStr, time: '', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -727,11 +947,10 @@ async function scheduleBot() {
   if (!canSchedule.value) return
   scheduling.value = true
   try {
-    const localIso   = `${sched.value.date}T${sched.value.time}:00`
-    const target     = new Date(localIso)
-    const utcMs      = target.getTime() - getTzOffset(sched.value.timezone, target)
+    const localIso    = `${sched.value.date}T${sched.value.time}:00`
+    const target      = new Date(localIso)
+    const utcMs       = target.getTime() - getTzOffset(sched.value.timezone, target)
     const scheduledAt = new Date(utcMs).toISOString()
-
     await $fetch('/api/bot/schedule', {
       method: 'POST',
       body: {
@@ -775,7 +994,7 @@ let silenceTimer:  any = null
 let deepTimer:     any = null
 let lastAnalyzedLength = 0
 
-// ── Platform metadata ────────────────────────────────────────────────────────
+// ── Platform metadata ──────────────────────────────────────────────────────────
 const platforms = [
   {
     id: 'googlemeet', name: 'Google Meet', bg: '#1a73e8', placeholder: 'https://meet.google.com/abc-defg-hij',
@@ -793,8 +1012,8 @@ const platforms = [
 
 const selectedPlatformMeta = computed(() => platforms.find(p => p.id === selectedPlatform.value))
 
-// ── Labels ────────────────────────────────────────────────────────────────────
-const agentLabels: Record<string, string> = { research: 'Research', writer: 'Writer', analyst: 'Analyst', executor: 'Executor', orchestrator: 'Orchestrator' }
+// ── Labels ─────────────────────────────────────────────────────────────────────
+const agentLabels:  Record<string, string> = { research: 'Research', writer: 'Writer', analyst: 'Analyst', executor: 'Executor', orchestrator: 'Orchestrator' }
 const statusLabels: Record<string, string> = { pending_approval: 'Pending', approved: 'Approved', in_progress: 'Running', needs_clarification: 'Question', completed: 'Done', cancelled: 'Cancelled' }
 
 function statusLabel(s: string) { return statusLabels[s] || s }
@@ -805,7 +1024,7 @@ function senderName(msg: any) {
   return agentLabels[msg.agent_type] || 'Agent'
 }
 
-// ── Header title editing ──────────────────────────────────────────────────────
+// ── Header title editing ───────────────────────────────────────────────────────
 async function startEditTitle() {
   editingTitle.value = true
   await nextTick()
@@ -823,7 +1042,7 @@ async function saveTitle() {
 
 // ── History inline title editing ──────────────────────────────────────────────
 async function startHistoryEdit(m: any) {
-  historyEditingId.value = m.id
+  historyEditingId.value    = m.id
   historyEditingTitle.value = m.title || 'Untitled meeting'
   await nextTick()
   historyTitleInputRef.value?.focus()
@@ -842,14 +1061,13 @@ async function commitHistoryTitle(m: any) {
   historyEditingId.value = null
 }
 
-// ── Lifecycle ─────────────────────────────────────────────────────────────────
+// ── Lifecycle ──────────────────────────────────────────────────────────────────
 let meetingChannel: any = null
 
 onMounted(async () => {
   await loadDevices()
   await loadPastMeetings()
 
-  // Pre-populate bot name from workspace settings
   try {
     const { data: ws } = await supabase
       .from('workspaces')
@@ -869,7 +1087,7 @@ onMounted(async () => {
       const { data } = await supabase.from('meetings').select('*').eq('id', storedId).single()
       meeting = data
       if (meeting) {
-        meetingId.value = meeting.id
+        meetingId.value    = meeting.id
         meetingTitle.value = meeting.title || 'New meeting'
       }
     } catch {}
@@ -898,11 +1116,16 @@ onUnmounted(() => {
   clearInterval(durationTimer); clearInterval(deepTimer); clearTimeout(silenceTimer)
   if (isRecording.value) stop()
   meetingChannel?.unsubscribe()
+  stopScreenPreview()
+  stopAudioLevelMeter()
 })
 
-// ── Recording ─────────────────────────────────────────────────────────────────
-async function startRecording() {
-  await start()
+// ── Recording ──────────────────────────────────────────────────────────────────
+// mode: 'display'  → getDisplayMedia (tab/window/screen) + optional system audio
+// mode: 'device'   → getUserMedia with specific deviceId (real mic/input)
+// mode: 'loopback' → getDisplayMedia audio-only for tab/app audio capture
+async function startRecording(opts: { mode: 'display' | 'device' | 'loopback'; deviceId?: string; captureAudio?: boolean; stream?: MediaStream | null } = { mode: 'display', captureAudio: true }) {
+  await start(opts)
   if (!startTime.value) startTime.value = new Date()
   durationTimer = setInterval(() => {
     const secs = Math.floor((Date.now() - startTime.value!.getTime()) / 1000)
@@ -957,10 +1180,10 @@ function scrollChat() { nextTick(() => { if (chatEl.value) chatEl.value.scrollTo
 // ── Upload ─────────────────────────────────────────────────────────────────────
 async function handleFileUpload(e: Event) {
   const input = e.target as HTMLInputElement
-  const file = input.files?.[0]
+  const file  = input.files?.[0]
   if (!file) return
   uploadStatus.value = `Transcribing ${file.name}…`
-  uploadError.value = false
+  uploadError.value  = false
   const form = new FormData()
   form.append('file', file)
   form.append('workspace_id', workspaceId)
@@ -972,7 +1195,7 @@ async function handleFileUpload(e: Event) {
     await loadPastMeetings()
   } catch (err: any) {
     uploadStatus.value = err?.data?.message || 'Transcription failed'
-    uploadError.value = true
+    uploadError.value  = true
   }
   input.value = ''
 }
@@ -1008,7 +1231,7 @@ function openMeeting(m: any) {
   navigateTo(`/workspace/${workspaceId}/meeting/room`)
 }
 
-// ── Bot join ──────────────────────────────────────────────────────────────────
+// ── Bot join ───────────────────────────────────────────────────────────────────
 function buildBotRoomUrl(): string {
   if (selectedPlatform.value === 'zoom' && botJoinMethod.value === 'id') {
     const rawId = botZoomId.value.replace(/\s+/g, '').replace(/-/g, '')
@@ -1056,7 +1279,6 @@ function startBotPolling(sessionId: string) {
   if (botPollInterval) clearInterval(botPollInterval)
   botPollInterval = setInterval(async () => {
     try {
-      // ✅ Use ?id= (not ?session_id=) — matches server/api/bot/status.get.ts
       const status = await $fetch<any>(`/api/bot/status?id=${sessionId}`)
       if (botSession.value) {
         botSession.value.status     = status.status
@@ -1065,7 +1287,6 @@ function startBotPolling(sessionId: string) {
       }
       if (status.status === 'stopped' || status.status === 'error') {
         clearInterval(botPollInterval)
-        // Save bot transcript back into this meeting's record
         if (status.transcript?.length && meetingId.value) {
           const plainText = status.transcript
             .map((e: any) => `[${e.role === 'bot' ? 'Bot' : 'Meeting'}] ${e.text}`)
@@ -1091,7 +1312,6 @@ async function leaveBotCall() {
   const sessionId = botSession.value?.session_id
   if (sessionId) {
     await $fetch('/api/bot/leave', { method: 'POST', body: { session_id: sessionId } }).catch(() => {})
-    // Save transcript if any
     if (botSession.value?.transcript?.length && meetingId.value) {
       const plainText = botSession.value.transcript
         .map((e: any) => `[${e.role === 'bot' ? 'Bot' : 'Meeting'}] ${e.text}`)
@@ -1114,25 +1334,21 @@ async function leaveBotCall() {
 onUnmounted(() => { clearInterval(botPollInterval) })
 </script>
 
-
 <style scoped>
 .meeting-room { height: 100vh; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); }
 
-/* ── Header ── */
+/* Header */
 .meeting-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 12px; }
 .header-left  { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .back-link { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-3); text-decoration: none; flex-shrink: 0; transition: color .13s; }
 .back-link:hover { color: var(--text-1); }
-
-/* Editable header title */
 .title-wrap { min-width: 0; }
 .title-btn { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 500; color: var(--text-1); background: none; border: none; cursor: pointer; padding: 3px 6px; border-radius: 6px; transition: background .13s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; }
 .title-btn:hover { background: var(--surface-2); }
 .title-btn svg { color: var(--text-3); flex-shrink: 0; opacity: 0; transition: opacity .13s; }
 .title-btn:hover svg { opacity: 1; }
 .title-edit-input { font-size: 15px; font-weight: 500; color: var(--text-1); background: var(--surface-2); border: 1.5px solid var(--accent-border); border-radius: 6px; padding: 3px 8px; outline: none; width: 220px; font-family: inherit; }
-
 .live-badge   { font-size: 11px; font-weight: 600; color: var(--red-text); background: var(--red-soft); padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
 .paused-badge { font-size: 11px; color: var(--amber-text); background: var(--amber-soft); padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
 .btn-record   { display: flex; align-items: center; gap: 7px; padding: 7px 16px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background .13s; }
@@ -1142,16 +1358,16 @@ onUnmounted(() => { clearInterval(botPollInterval) })
 .btn-secondary { padding: 7px 14px; background: var(--surface-2); color: var(--text-1); border: 1px solid var(--border); border-radius: 7px; cursor: pointer; font-size: 13px; }
 .btn-danger    { padding: 7px 14px; background: var(--red-soft); color: var(--red-text); border: none; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 500; }
 
-/* ── Tab bar ── */
+/* Tab bar */
 .tab-bar { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; flex-shrink: 0; }
 .tab-btn { display: flex; align-items: center; gap: 6px; padding: 10px 16px; font-size: 13px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-3); cursor: pointer; transition: all .13s; margin-bottom: -1px; font-family: inherit; }
 .tab-btn:hover { color: var(--text-1); }
 .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
 
-/* ── Body ── */
+/* Body */
 .meeting-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; position: relative; min-height: 0; }
 
-/* Live tab */
+/* Live grid */
 .live-grid { display: grid; grid-template-columns: 1fr 1.1fr; flex: 1; overflow: hidden; gap: 1px; background: var(--border); height: 100%; }
 .panel { display: flex; flex-direction: column; background: var(--surface); overflow: hidden; }
 .panel-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); padding: 12px 16px 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
@@ -1196,12 +1412,8 @@ onUnmounted(() => { clearInterval(botPollInterval) })
 .ended-card h3 { font-size: 18px; font-weight: 600; color: var(--text-1); }
 .ended-card p  { font-size: 14px; color: var(--text-2); }
 
-/* ── Bot tab ── */
+/* Bot tab */
 .bot-tab { padding: 24px; max-width: 680px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; padding-bottom: 40px; }
-.bot-intro { display: flex; gap: 16px; align-items: flex-start; padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-.bot-intro-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0; }
-.bot-intro h3 { font-size: 15px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; }
-.bot-intro p  { font-size: 13px; color: var(--text-2); line-height: 1.6; }
 .platform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .platform-btn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all .13s; position: relative; font-family: inherit; }
 .platform-btn:hover  { border-color: var(--accent); }
@@ -1212,21 +1424,14 @@ onUnmounted(() => { clearInterval(botPollInterval) })
 .bot-form { display: flex; flex-direction: column; gap: 14px; }
 .bot-form-field { display: flex; flex-direction: column; gap: 5px; }
 .bot-form-field label { font-size: 12px; font-weight: 500; color: var(--text-2); }
-.field-opt { font-weight: 400; color: var(--text-3); }
 .field-required { color: var(--red-text, #ef4444); }
 .field-error-msg { font-size: 11px; color: var(--red-text, #ef4444); margin-top: 2px; }
-.field-hint { font-size: 11px; color: var(--text-3); line-height: 1.5; margin-top: 2px; }
 .input-error { border-color: var(--red-text, #ef4444) !important; }
-/* Bot mode tabs (Join now / Schedule) */
 .bot-mode-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
 .bot-mode-tab { display: flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; font-weight: 500; color: var(--text-3); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-family: inherit; transition: color .13s, border-color .13s; margin-bottom: -1px; }
 .bot-mode-tab:hover { color: var(--text-1); }
 .bot-mode-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-/* Schedule time row */
 .sched-time-row { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 10px; }
-
-/* Scheduled list */
 .sched-list { display: flex; flex-direction: column; gap: 8px; }
 .sched-list-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); }
 .sched-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm, 8px); gap: 12px; }
@@ -1240,17 +1445,10 @@ onUnmounted(() => { clearInterval(botPollInterval) })
 .sched-status-badge.failed  { background: var(--red-soft); color: var(--red-text); }
 .sched-cancel-btn { font-size: 12px; padding: 4px 10px; color: var(--red-text); background: var(--red-soft); border: 1px solid #fca5a5; border-radius: 6px; cursor: pointer; font-family: inherit; white-space: nowrap; }
 .sched-cancel-btn:hover { background: #fecaca; }
-
-/* Join notice (reused in schedule tab) */
 .join-notice { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-3); line-height: 1.5; padding: 10px 12px; background: var(--surface-2); border-radius: var(--radius-sm, 8px); }
 .join-method-toggle button { flex: 1; padding: 7px 12px; font-size: 12px; font-weight: 500; color: var(--text-3); background: transparent; border: none; cursor: pointer; font-family: inherit; transition: background .13s, color .13s; }
 .join-method-toggle button.active { background: var(--accent); color: #fff; }
 .join-method-toggle button:not(.active):hover { background: var(--surface-2); color: var(--text-1); }
-/* Instructions */
-.instructions-toggle { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; color: var(--text-3); cursor: pointer; padding: 2px 0; user-select: none; transition: color .13s; }
-.instructions-toggle:hover { color: var(--text-1); }
-.instructions-badge { font-size: 10px; padding: 1px 7px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
-.instructions-hint { font-size: 11px; color: var(--text-3); font-weight: 400; font-style: italic; }
 .instructions-textarea { resize: vertical; min-height: 88px; line-height: 1.6; font-family: inherit; }
 .bot-join-btn { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 11px; }
 .bot-session { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
@@ -1270,341 +1468,130 @@ onUnmounted(() => { clearInterval(botPollInterval) })
 .bot-entry-text { font-size: 13px; color: var(--text-1); line-height: 1.5; padding: 6px 10px; border-radius: 7px; }
 .bot-entry.human .bot-entry-text { background: var(--surface-2); }
 .bot-entry.bot   .bot-entry-text { background: var(--accent-soft); border-left: 3px solid var(--accent); }
-.bot-note { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: var(--amber-soft); border: 1px solid var(--amber-border, #fde68a); border-radius: var(--radius); font-size: 12px; color: var(--amber-text); line-height: 1.5; }
-.bot-note svg { flex-shrink: 0; margin-top: 1px; }
-/* Speaking wave */
 .wave-inline { display: flex; gap: 2px; align-items: center; }
 .wave-inline span { display: block; width: 3px; border-radius: 2px; background: var(--accent); animation: wave 1.2s infinite ease-in-out; }
 .wave-inline span:nth-child(1){ height:6px }.wave-inline span:nth-child(2){ height:12px;animation-delay:.1s }.wave-inline span:nth-child(3){ height:8px;animation-delay:.2s }
 @keyframes wave { 0%,100%{transform:scaleY(.5)} 50%{transform:scaleY(1)} }
 
-/* ── History tab — unified list ── */
-.history-tab {
-  overflow-y: auto;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.history-empty {
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-  padding: 60px 0; color: var(--text-3); font-size: 13px; font-style: italic;
-}
-
-/* Full-bleed list — no outer card, fills the tab completely */
-.history-list {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-}
-
-/* Column header */
-.history-list-header {
-  display: grid;
-  grid-template-columns: 1fr 150px 90px 300px;
-  align-items: center;
-  padding: 7px 20px;
-  background: var(--surface-2);
-  border-bottom: 1px solid var(--border);
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  color: var(--text-3);
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-/* Each meeting row */
-.history-row-main {
-  display: grid;
-  grid-template-columns: 1fr 150px 90px 300px;
-  align-items: center;
-  padding: 0 20px;
-  min-height: 46px;
-  cursor: pointer;
-  transition: background .1s;
-}
+/* History tab */
+.history-tab { overflow-y: auto; flex: 1; display: flex; flex-direction: column; }
+.history-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 60px 0; color: var(--text-3); font-size: 13px; font-style: italic; }
+.history-list { flex: 1; display: flex; flex-direction: column; background: var(--surface); border-top: 1px solid var(--border); }
+.history-list-header { display: grid; grid-template-columns: 1fr 150px 90px 300px; align-items: center; padding: 7px 20px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); position: sticky; top: 0; z-index: 1; }
+.history-row-main { display: grid; grid-template-columns: 1fr 150px 90px 300px; align-items: center; padding: 0 20px; min-height: 46px; cursor: pointer; transition: background .1s; }
 .history-row-main:hover { background: var(--surface-2); }
-
-/* Title cell */
-.hcol-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  padding: 10px 16px 10px 0;
-}
-.history-row-open {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-1);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-family: inherit;
-  flex-shrink: 1;
-  min-width: 0;
-  transition: color .13s;
-}
+.hcol-title { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 10px 16px 10px 0; }
+.history-row-open { font-size: 13px; font-weight: 500; color: var(--text-1); background: none; border: none; padding: 0; cursor: pointer; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: inherit; flex-shrink: 1; min-width: 0; transition: color .13s; }
 .history-row-main:hover .history-row-open { color: var(--accent); }
-
-/* Always-visible Edit button with text */
-.history-edit-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-3);
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 500;
-  font-family: inherit;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background .13s, color .13s, border-color .13s;
-}
+.history-edit-btn { display: flex; align-items: center; gap: 4px; padding: 3px 8px; border: 1px solid var(--border); background: transparent; color: var(--text-3); cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: 500; font-family: inherit; white-space: nowrap; flex-shrink: 0; transition: background .13s, color .13s, border-color .13s; }
 .history-edit-btn:hover { background: var(--surface-2); color: var(--accent); border-color: var(--accent-border); }
-
-.history-title-input {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-1);
-  background: var(--surface-2);
-  border: 1.5px solid var(--accent-border);
-  border-radius: 5px;
-  padding: 3px 8px;
-  outline: none;
-  flex: 1;
-  min-width: 0;
-  font-family: inherit;
-}
-
-/* Other columns */
-.hcol-date {
-  font-size: 12px;
-  color: var(--text-3);
-  white-space: nowrap;
-}
+.history-title-input { font-size: 13px; font-weight: 500; color: var(--text-1); background: var(--surface-2); border: 1.5px solid var(--accent-border); border-radius: 5px; padding: 3px 8px; outline: none; flex: 1; min-width: 0; font-family: inherit; }
+.hcol-date { font-size: 12px; color: var(--text-3); white-space: nowrap; }
 .hcol-tasks { display: flex; align-items: center; }
-.task-pill {
-  font-size: 11px;
-  color: var(--green-text);
-  background: var(--green-soft);
-  padding: 2px 8px;
-  border-radius: 99px;
-  white-space: nowrap;
-}
+.task-pill { font-size: 11px; color: var(--green-text); background: var(--green-soft); padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
 .task-pill-empty { font-size: 12px; color: var(--text-3); }
-
-/* Always-visible actions column */
-.hcol-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-.hrow-btn {
-  display: flex; align-items: center; gap: 5px;
-  padding: 4px 10px;
-  font-size: 12px; font-weight: 500;
-  color: var(--text-2);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer; font-family: inherit;
-  white-space: nowrap;
-  transition: background .13s, color .13s, border-color .13s;
-}
+.hcol-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.hrow-btn { display: flex; align-items: center; gap: 5px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: var(--text-2); background: transparent; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-family: inherit; white-space: nowrap; transition: background .13s, color .13s, border-color .13s; }
 .hrow-btn:hover { background: var(--surface-2); color: var(--text-1); border-color: var(--text-3); }
 .hrow-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-border); }
-
-.hrow-icon-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-3);
-  cursor: pointer; border-radius: 6px; padding: 0;
-  transition: background .13s, color .13s, border-color .13s;
-}
+.hrow-icon-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid var(--border); background: transparent; color: var(--text-3); cursor: pointer; border-radius: 6px; padding: 0; transition: background .13s, color .13s, border-color .13s; }
 .hrow-icon-btn:hover { background: var(--red-soft); color: var(--red-text); border-color: #fca5a5; }
-
-/* Transcript expand — full width, no indent */
-.history-transcript {
-  padding: 14px 20px;
-  font-size: 13px; line-height: 1.75; color: var(--text-2);
-  border-top: 1px solid var(--border-soft, var(--border));
-  background: var(--surface-2);
-  max-height: 220px; overflow-y: auto; white-space: pre-wrap;
-}
-
-/* Row divider */
+.history-transcript { padding: 14px 20px; font-size: 13px; line-height: 1.75; color: var(--text-2); border-top: 1px solid var(--border-soft, var(--border)); background: var(--surface-2); max-height: 220px; overflow-y: auto; white-space: pre-wrap; }
 .history-divider { height: 1px; background: var(--border-soft, var(--border)); }
 
-.btn-sm { font-size: 11px; padding: 4px 10px; }
-.btn-icon { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: none; background: transparent; color: var(--text-3); cursor: pointer; border-radius: 5px; padding: 0; transition: background .13s, color .13s; }
-.btn-icon:hover { background: var(--red-soft); color: var(--red-text); }
-
-/* ── Share / Record Modal ── */
-.modal-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.5);
-  backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 900;
-}
-.share-modal {
-  width: 460px;
-  max-width: calc(100vw - 32px);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 32px 80px rgba(0,0,0,.55);
-  display: flex; flex-direction: column;
-  overflow: hidden;
-}
-
-.share-modal-header {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 18px 20px 16px;
-  border-bottom: 1px solid var(--border-soft, var(--border));
-}
-.share-modal-icon {
-  width: 34px; height: 34px; border-radius: 8px;
-  background: var(--accent-soft); border: 1px solid var(--accent-border);
-  color: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.share-modal-title { font-size: 14px; font-weight: 600; color: var(--text-1); margin: 0 0 2px; }
-.share-modal-sub   { font-size: 12px; color: var(--text-3); margin: 0; }
-.share-modal-close {
-  margin-left: auto; width: 26px; height: 26px;
-  display: flex; align-items: center; justify-content: center;
-  border: none; background: transparent; color: var(--text-3);
-  cursor: pointer; border-radius: 6px;
-  transition: background .13s, color .13s;
-}
+/* Share modal */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 900; }
+.share-modal { width: 520px; max-width: calc(100vw - 32px); background: var(--surface); border: 1px solid var(--border); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
+.share-modal-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.share-modal-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.share-modal-titles { flex: 1; min-width: 0; }
+.share-modal-title { font-size: 14px; font-weight: 500; color: var(--text-1); margin: 0 0 1px; }
+.share-modal-sub   { font-size: 11px; color: var(--text-3); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.share-modal-close { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: var(--text-3); cursor: pointer; border-radius: 6px; transition: background .13s, color .13s; flex-shrink: 0; }
 .share-modal-close:hover { background: var(--surface-2); color: var(--text-1); }
-
-.share-modal-body { display: flex; flex-direction: column; }
-
-/* Source tabs */
-.share-tabs {
-  display: flex; gap: 0;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border-soft, var(--border));
-}
-.share-tab {
-  padding: 9px 14px;
-  font-size: 12px; font-weight: 500;
-  color: var(--text-3);
-  background: transparent; border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer; font-family: inherit;
-  transition: color .13s, border-color .13s;
-  margin-bottom: -1px;
-}
+.share-tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 16px; }
+.share-tab  { display: flex; align-items: center; gap: 6px; padding: 10px 14px; font-size: 12px; font-weight: 500; color: var(--text-3); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-family: inherit; transition: color .13s, border-color .13s; margin-bottom: -1px; }
 .share-tab:hover { color: var(--text-1); }
 .share-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.share-modal-body { display: flex; flex-direction: column; }
 
-/* Source items */
-.share-tab-content { padding: 8px 10px; max-height: 200px; overflow-y: auto; }
-.share-items { display: flex; flex-direction: column; gap: 2px; }
-.share-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px; border-radius: 8px;
-  cursor: pointer; border: 1px solid transparent;
-  transition: background .12s;
-}
-.share-item:hover { background: var(--surface-2); }
-.share-item.selected { background: var(--accent-soft); border-color: var(--accent-border); }
-.share-item-icon {
-  width: 26px; height: 26px;
-  background: var(--surface-2); border: 1px solid var(--border-soft, var(--border));
-  border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-3); flex-shrink: 0;
-}
-.share-item.selected .share-item-icon { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent); }
-.share-item-name { flex: 1; font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.share-item-check {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--accent); color: #fff;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
+/* Idle select card */
+.screen-select-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 28px 32px; border: 1.5px dashed var(--border); border-radius: 12px; cursor: pointer; transition: border-color .15s, background .15s; text-align: center; width: 100%; max-width: 320px; }
+.screen-select-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.screen-select-icon { width: 52px; height: 52px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: background .15s, color .15s; }
+.screen-select-card:hover .screen-select-icon { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent); }
+.screen-select-label { font-size: 13px; font-weight: 500; color: var(--text-1); margin: 0; }
+.screen-select-sub   { font-size: 12px; color: var(--text-3); margin: 0; }
+.screen-select-btn { display: flex; align-items: center; gap: 6px; padding: 7px 18px; font-size: 12px; font-weight: 500; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-border); border-radius: 8px; margin-top: 4px; transition: background .13s, color .13s; }
+.screen-select-card:hover .screen-select-btn { background: var(--accent); color: #fff; }
+.screen-audio-notice { display: flex; align-items: flex-start; gap: 8px; padding: 10px 14px; background: var(--amber-soft); border: 1px solid var(--amber-text); border-radius: 8px; font-size: 12px; color: var(--amber-text); line-height: 1.5; max-width: 320px; margin-top: 4px; }
+.screen-audio-notice svg { flex-shrink: 0; margin-top: 1px; }
+.screen-audio-notice strong { font-weight: 600; }
 
-/* Options */
-.share-options {
-  border-top: 1px solid var(--border-soft, var(--border));
-}
-.share-option-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 12px 16px;
-}
-.share-option-row + .share-option-row { border-top: 1px solid var(--border-soft, var(--border)); }
-.share-option-info { display: flex; align-items: flex-start; gap: 10px; color: var(--text-3); flex: 1; min-width: 0; }
-.share-option-info svg { margin-top: 2px; flex-shrink: 0; }
-.share-option-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-1); }
-.share-option-desc  { display: block; font-size: 11px; color: var(--text-3); margin-top: 1px; }
+/* Screen states */
+.screen-state-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px 24px; text-align: center; min-height: 200px; }
+.screen-state-spinner { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--surface-2); }
+.spinner-lg { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--border); border-top-color: var(--accent); animation: spin .8s linear infinite; display: inline-block; }
+.screen-state-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.screen-state-icon--warn { background: var(--amber-soft, #fef3c7); color: var(--amber-text, #92400e); }
+.screen-state-title { font-size: 14px; font-weight: 500; color: var(--text-1); margin: 0; }
+.screen-state-sub   { font-size: 12px; color: var(--text-3); margin: 0; line-height: 1.5; max-width: 280px; }
+.btn-retry { display: flex; align-items: center; gap: 6px; padding: 7px 16px; font-size: 12px; font-weight: 500; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-border); border-radius: 8px; cursor: pointer; font-family: inherit; transition: background .13s; margin-top: 4px; }
+.btn-retry:hover { background: var(--accent); color: #fff; }
+
+/* Live preview */
+.screen-preview-wrap { display: flex; flex-direction: column; }
+.screen-preview-frame { position: relative; background: var(--surface-3); margin: 14px 16px 0; border-radius: 10px; overflow: hidden; aspect-ratio: 16/9; }
+.screen-preview-video { width: 100%; height: 100%; object-fit: contain; display: block; }
+.screen-preview-badge { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 5px; padding: 3px 8px; background: rgba(0,0,0,.6); border-radius: 99px; font-size: 11px; font-weight: 500; color: #fff; }
+.preview-dot { width: 6px; height: 6px; border-radius: 50%; background: #ef4444; animation: blink 1.2s infinite; flex-shrink: 0; }
+.screen-source-label { position: absolute; bottom: 10px; left: 10px; right: 10px; font-size: 11px; color: rgba(255,255,255,.85); background: rgba(0,0,0,.5); padding: 4px 10px; border-radius: 6px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.screen-options { display: flex; flex-direction: column; margin: 12px 16px 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.screen-option { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; gap: 16px; }
+.screen-option + .screen-option { border-top: 1px solid var(--border); }
+.screen-option-info { display: flex; align-items: flex-start; gap: 10px; color: var(--text-3); flex: 1; }
+.screen-option-info svg { margin-top: 2px; flex-shrink: 0; }
+.screen-option-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-1); }
+.screen-option-desc  { display: block; font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.screen-change-row { display: flex; justify-content: flex-start; padding: 10px 16px 14px; }
+.screen-change-btn { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-3); background: none; border: none; cursor: pointer; font-family: inherit; transition: color .13s; padding: 0; }
+.screen-change-btn:hover { color: var(--accent); }
+
+/* Audio tab */
+.audio-tab-body { padding: 14px 16px; min-height: 200px; display: flex; flex-direction: column; gap: 8px; }
+.audio-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); padding: 2px 0 4px; }
+.audio-device-list { display: flex; flex-direction: column; gap: 4px; }
+.audio-device-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; border: 1.5px solid transparent; cursor: pointer; transition: background .12s, border-color .12s; }
+.audio-device-row:hover { background: var(--surface-2); }
+.audio-device-row.selected { background: var(--accent-soft); border-color: var(--accent-border); }
+.audio-device-row--loopback { margin-top: 6px; border: 1px dashed var(--border); }
+.audio-device-row--loopback.selected { border-style: solid; border-color: var(--accent-border); }
+.audio-device-icon { width: 30px; height: 30px; border-radius: 7px; background: var(--surface-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-3); flex-shrink: 0; }
+.audio-device-row.selected .audio-device-icon { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent); }
+.audio-device-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.audio-device-name { font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.audio-device-sub  { font-size: 11px; color: var(--text-3); line-height: 1.4; }
+.audio-device-badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-weight: 500; width: fit-content; }
+.audio-device-check { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.audio-level-meter { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
+.audio-level-bar { width: 3px; border-radius: 2px; background: var(--border); transition: background .08s; }
+.audio-level-bar:nth-child(1){height:4px}.audio-level-bar:nth-child(2){height:6px}.audio-level-bar:nth-child(3){height:9px}.audio-level-bar:nth-child(4){height:11px}.audio-level-bar:nth-child(5){height:13px}.audio-level-bar:nth-child(6){height:15px}.audio-level-bar:nth-child(7){height:17px}.audio-level-bar:nth-child(8){height:18px}
+.audio-level-bar.active { background: var(--accent); }
 
 /* Toggle */
-.toggle {
-  width: 34px; height: 19px; border-radius: 99px;
-  border: none; background: var(--border);
-  cursor: pointer; position: relative;
-  transition: background .2s; flex-shrink: 0; padding: 0;
-}
+.toggle { width: 34px; height: 19px; border-radius: 99px; border: none; background: var(--border); cursor: pointer; position: relative; transition: background .2s; flex-shrink: 0; padding: 0; }
 .toggle.on { background: var(--accent); }
-.toggle-knob {
-  position: absolute; top: 2.5px; left: 2.5px;
-  width: 14px; height: 14px; border-radius: 50%;
-  background: #fff; transition: transform .2s; display: block;
-  box-shadow: 0 1px 3px rgba(0,0,0,.25);
-}
+.toggle-knob { position: absolute; top: 2.5px; left: 2.5px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .2s; display: block; }
 .toggle.on .toggle-knob { transform: translateX(15px); }
 
 /* Footer */
-.share-modal-footer {
-  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
-  padding: 14px 16px;
-  border-top: 1px solid var(--border-soft, var(--border));
-}
-.btn-cancel-modal {
-  padding: 7px 16px; font-size: 13px; font-weight: 500;
-  color: var(--text-2); background: transparent;
-  border: 1px solid var(--border); border-radius: 8px;
-  cursor: pointer; font-family: inherit;
-  transition: background .13s, color .13s;
-}
+.share-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--border); }
+.btn-cancel-modal { padding: 7px 16px; font-size: 13px; font-weight: 500; color: var(--text-2); background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; transition: background .13s; }
 .btn-cancel-modal:hover { background: var(--surface-2); color: var(--text-1); }
-.btn-start-rec {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 18px; font-size: 13px; font-weight: 500;
-  color: #fff; background: var(--accent);
-  border: none; border-radius: 8px;
-  cursor: pointer; font-family: inherit;
-  transition: background .13s, opacity .13s;
-}
+.btn-start-rec { display: flex; align-items: center; gap: 8px; padding: 7px 18px; font-size: 13px; font-weight: 500; color: #fff; background: var(--accent); border: none; border-radius: 8px; cursor: pointer; font-family: inherit; transition: background .13s, opacity .13s; }
 .btn-start-rec:not(:disabled):hover { background: var(--accent-hover); }
 .btn-start-rec:disabled { opacity: .4; cursor: not-allowed; }
-.rec-dot-sm {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: #fff; flex-shrink: 0;
-  animation: blink 1.2s infinite;
-}
+.rec-dot-sm { width: 7px; height: 7px; border-radius: 50%; background: #fff; flex-shrink: 0; animation: blink 1.2s infinite; }
 
 /* Shared utils */
 .input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 13px; font-family: inherit; background: var(--surface); color: var(--text-1); outline: none; width: 100%; }
@@ -1615,6 +1602,7 @@ onUnmounted(() => { clearInterval(botPollInterval) })
 .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
 .btn-ghost { background: transparent; color: var(--text-2); border: 1px solid var(--border); }
 .btn-ghost:hover { background: var(--surface-2); color: var(--text-1); }
+.btn-sm { font-size: 11px; padding: 4px 10px; }
 .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>
